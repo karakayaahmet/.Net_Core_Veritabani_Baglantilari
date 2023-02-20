@@ -11,9 +11,9 @@ interface IProductDal{
 
     void Create(Products p);
 
-    void Update(Products p);
+    int Update(Products p);
 
-    void Delete(int productId);
+    int Delete(int productId);
 
     int Total();
 }
@@ -56,9 +56,9 @@ class MySqlProductDal : IProductDal
         
     }
 
-    public void Delete(int productId)
+    public int Delete(int productId)
     {
-        
+        return 7;
     }
 
     public Products GetProductById(int id)
@@ -144,9 +144,37 @@ class MySqlProductDal : IProductDal
         return products;
     }
 
-    public void Update(Products p)
+    public int Update(Products p)
     {
-        
+        int result = 0;
+
+        using(var con = getMySqlConnection()){
+            try{
+                con.Open();
+                Console.WriteLine("Bağlantı Sağlandı.");
+
+                string sql = "update products set product_name=@product_name, list_price=@list_price where id = @id";
+
+                MySqlCommand command = new MySqlCommand(sql, con);
+
+                command.Parameters.AddWithValue("@product_name",p.Name);
+                command.Parameters.AddWithValue("@list_price",p.Price);
+                command.Parameters.AddWithValue("@id",p.ProductId);
+
+                result = command.ExecuteNonQuery();
+
+            }
+
+            catch(Exception e){
+                Console.WriteLine(e.Message);
+            }
+
+            finally{
+                con.Close();
+            }
+        }
+
+        return result;
     }
 
     public List<Products> Find(string productName)
@@ -272,7 +300,21 @@ class Program
             Price = 4000
         };
 
-        create.Create(p);    
+        create.Create(p);  
+
+        //*********************************************************
+
+        var update = new MySqlProductDal();
+
+        Products u = new Products(){
+            ProductId = 100,
+            Name = "Samsung S7",
+            Price = 3000
+        };
+
+        var sonuc = update.Update(u);
+
+        Console.WriteLine($"{sonuc} adet kayıt güncellenmiştir.");
 
     }
 }
