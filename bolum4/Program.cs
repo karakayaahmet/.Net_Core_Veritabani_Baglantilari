@@ -58,7 +58,32 @@ class MySqlProductDal : IProductDal
 
     public int Delete(int productId)
     {
-        return 7;
+        int result = 0;
+
+        using(var con = getMySqlConnection()){
+            try{
+                con.Open();
+                Console.WriteLine("Bağlantı Sağlandı.");
+
+                string sql = "delete from products where id = @id";
+
+                MySqlCommand command = new MySqlCommand(sql, con);
+
+                command.Parameters.Add("@id", MySqlDbType.Int32).Value = productId;
+
+                result = command.ExecuteNonQuery();
+            }
+
+            catch(Exception e){
+                Console.WriteLine(e.Message);
+            }
+
+            finally{
+                con.Close();
+            }
+        }
+
+        return result;
     }
 
     public Products GetProductById(int id)
@@ -315,6 +340,14 @@ class Program
         var sonuc = update.Update(u);
 
         Console.WriteLine($"{sonuc} adet kayıt güncellenmiştir.");
+
+        //*********************************************************
+
+        var delete = new MySqlProductDal();
+
+        int silinen = delete.Delete(101);
+
+        Console.WriteLine($"{silinen} adet kayıt silinmiştir.");
 
     }
 }
