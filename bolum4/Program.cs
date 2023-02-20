@@ -27,6 +27,32 @@ class MySqlProductDal : IProductDal
     }
     public void Create(Products p)
     {
+        using(var con = getMySqlConnection()){
+            try{
+                con.Open();
+                Console.WriteLine("Bağlantı Sağlandı.");
+
+                string sql = "insert into products (product_name, discontinued, list_price) values(@product_name, @discontinued, @list_price)";
+
+                MySqlCommand command = new MySqlCommand(sql, con);
+
+                command.Parameters.AddWithValue("@product_name",p.Name);
+                command.Parameters.AddWithValue("@discontinued",1);
+                command.Parameters.AddWithValue("@list_price",p.Price);
+
+                int result = command.ExecuteNonQuery();
+
+                Console.WriteLine($"{result} adet kayıt eklendi.");
+            }
+
+            catch(Exception e){
+                Console.WriteLine(e.Message);
+            }
+
+            finally{
+                con.Close();
+            }
+        }
         
     }
 
@@ -236,6 +262,17 @@ class Program
         var urun_toplam = total.Total();
 
         Console.WriteLine($"Toplam Ürün Sayısı : {urun_toplam}");
+
+        //*******************************************************
+
+        var create = new MySqlProductDal();
+
+        Products p = new Products(){
+            Name = "Samsung S8",
+            Price = 4000
+        };
+
+        create.Create(p);    
 
     }
 }
