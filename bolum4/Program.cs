@@ -14,6 +14,8 @@ interface IProductDal{
     void Update(Products p);
 
     void Delete(int productId);
+
+    int Total();
 }
 
 class MySqlProductDal : IProductDal
@@ -162,11 +164,45 @@ class MySqlProductDal : IProductDal
 
         return products;
     }
+
+    public int Total()
+    {
+        int toplam = 0;
+
+        using(var con = getMySqlConnection()){
+            try{
+                con.Open();
+                Console.WriteLine("Bağlantı Sağlandı.");
+
+                string sql = "select count(*) from products";
+
+                MySqlCommand command = new MySqlCommand(sql, con);
+
+                object result = command.ExecuteScalar();
+
+                if (result is not null){
+                    toplam = Convert.ToInt32(result);
+                }
+            }
+
+            catch(Exception e){
+                Console.WriteLine(e.Message);
+            }
+
+            finally{
+                con.Close();
+            }
+        }
+
+        return toplam;
+    }
 }
 class Program
 {
     static void Main(string[] args)
     {
+
+        //*************************************************
         var productdal = new MySqlProductDal();
 
         var products = productdal.GetProducts();
@@ -176,9 +212,13 @@ class Program
             Console.WriteLine($"Ürün id : {item.ProductId}, Ürün Ad : {item.Name}, Ürün Fiyat : {item.Price}");
         }
 
+        //*********************************************
+
         var product = productdal.GetProductById(3);
 
         Console.WriteLine($"Product id : {product.ProductId}, Product Name : {product.Name}, Product Price : {product.Price}");
+
+        //********************************************************
 
         var new_products = new MySqlProductDal();
 
@@ -188,6 +228,14 @@ class Program
         {
             Console.WriteLine($"ürün ad : {item.Name}, ürün id : {item.ProductId}, ürün fiyat : {item.Price}");
         }
+
+        //********************************************************
+
+        var total = new MySqlProductDal();
+
+        var urun_toplam = total.Total();
+
+        Console.WriteLine($"Toplam Ürün Sayısı : {urun_toplam}");
 
     }
 }
